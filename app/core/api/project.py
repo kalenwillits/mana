@@ -5,8 +5,10 @@ router = Router()
 
 
 @router.get("/")
-def sync(request):
+def project_sync(request):
+
     return {
         "status_code": 200,
         "message": "Under Construction!"
     }
+
