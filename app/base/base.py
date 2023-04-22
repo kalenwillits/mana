@@ -25,25 +25,17 @@ class BaseManager(models.Manager):
             for field in obj._meta.fields:
                 obj_class = type(obj)
                 field_class = type(field)
-                if issubclass(obj_class, Public) or \
-                    issubclass(field_class, Public) and \
+                if issubclass(field_class, Public) or \
+                    issubclass(obj_class, Public) and \
                         not issubclass(field_class, Private):
-                    if field.is_relation:
-                        if not getattr(obj, field.name):
-                            obj_values[field.name] = None
-                        else:
-                            obj_values[field.name] = type(getattr(
-                                obj, field.name
-                            )).objects.hydrate(id=getattr(obj, field.name).id)
-                            if isinstance(field, PublicForeignKey):
-                                obj_values[field.name] = next(
-                                    iter(
-                                        obj_values[field.name]
-                                    ),
-                                    None
-                                )
-                    else:
+                    if not field.is_relation:
                         obj_values[field.name] = getattr(obj, field.name)
+
+                for related_obj in type(obj)._meta.related_objects:
+                    if issubclass(type(related_obj.remote_field), Public):
+                        obj_values[related_obj.name] = related_obj.related_model.objects.hydrate(**{
+                            related_obj.remote_field.name: obj
+                        })
             values.append(obj_values)
         return values
 

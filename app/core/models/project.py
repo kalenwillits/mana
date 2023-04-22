@@ -8,7 +8,7 @@ class Project(PrivateModel):
     organization = fields.PrivateForeignKey("Organization", on_delete=models.CASCADE, related_name="+")
     author = fields.PublicForeignKey("User", blank=True, null=True,  on_delete=models.CASCADE, related_name="+")
     name = fields.PublicCharField(max_length=250, default="")
-    thread = fields.PublicForeignKey("Thread", blank=True, null=True, on_delete=models.CASCADE)
+    threads = fields.PublicManyToManyField("Thread", blank=True)
     state = fields.PublicForeignKey("ProjectState", blank=True, null=True, on_delete=models.SET_NULL)
     tags = fields.PublicManyToManyField("Tag", blank=True)
 
