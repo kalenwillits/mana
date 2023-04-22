@@ -1,10 +1,13 @@
 from django.db import models
-
 from django.contrib.auth.models import Group
 
+from base import Private
+from base import fields
 
-class Role(Group):
-    organization = models.ForeignKey("Organization", on_delete=models.CASCADE, related_name="+")
+
+class Role(Private, Group):
+    organization = fields.PrivateForeignKey("Organization", on_delete=models.CASCADE, related_name="+")
+    tags = fields.PrivateManyToManyField("Tag", blank=True)
 
     class Meta:
         app_label = "core"

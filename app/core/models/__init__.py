@@ -8,3 +8,5 @@ from .task import Task
 from .task_state import TaskState
 from .thread import Thread
 from .user import User
+from .tag import Tag
+
