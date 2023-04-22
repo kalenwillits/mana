@@ -12,6 +12,6 @@ class User(AbstractUser, PrivateModel):
     organization = fields.PrivateForeignKey(
         "Organization", on_delete=models.CASCADE, related_name="+", blank=True, null=True)
     role = fields.PrivateForeignKey("Role", on_delete=models.SET_NULL, related_name="role", null=True, blank=True)
-    tags = fields.PublicManyToManyField("Tag", blank=True)
 
     objects = BaseUserManager()
+    tags = fields.PublicManyToManyField("Tag", blank=True)

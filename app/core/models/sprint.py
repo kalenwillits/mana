@@ -5,12 +5,14 @@ from base import fields
 
 
 class Sprint(PrivateModel):
-    organization = fields.PrivateForeignKey("Organization", on_delete=models.CASCADE, related_name="+")
-    author = fields.PublicForeignKey("User", blank=True, null=True,  on_delete=models.CASCADE, related_name="+")
+    organization = fields.PrivateForeignKey("Organization", on_delete=models.CASCADE)
+    author = fields.PublicForeignKey("User", blank=True, null=True,  on_delete=models.CASCADE)
     name = fields.PublicCharField(max_length=250, default="")
-    threads = fields.PublicManyToManyField("Thread", blank=True)
     project = fields.PublicForeignKey("Project", on_delete=models.CASCADE, related_name="sprints")
-    state = fields.PublicForeignKey("SprintState", blank=True, null=True, on_delete=models.SET_NULL)
+    state = fields.PublicForeignKey("State", blank=True, null=True, on_delete=models.SET_NULL,
+                                    related_name="sprint_states")
+    start_date = fields.PublicIntegerField(blank=True, null=True)
+    end_date = fields.PublicIntegerField(blank=True, null=True)
     tags = fields.PublicManyToManyField("Tag", blank=True)
 
     def __str__(self) -> str:

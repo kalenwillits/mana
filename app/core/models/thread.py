@@ -5,8 +5,13 @@ from base import fields
 
 
 class Thread(PrivateModel):
-    organization = fields.PrivateForeignKey("Organization", on_delete=models.CASCADE, related_name="+")
-    author = fields.PublicForeignKey("User", blank=True, null=True,  on_delete=models.CASCADE, related_name="+")
+    organization = fields.PrivateForeignKey("Organization", on_delete=models.CASCADE)
+    author = fields.PublicForeignKey("User", blank=True, null=True, on_delete=models.CASCADE)
     text = fields.PublicTextField(default="")
-    threads = fields.PublicManyToManyField("self", blank=True)
+    thread = fields.PublicForeignKey("self", blank=True, null=True, on_delete=models.SET_NULL, related_name="+")
+    project = fields.PublicForeignKey("Project", blank=True, null=True, related_name="projects",
+                                      on_delete=models.SET_NULL)
+    sprint = fields.PublicForeignKey("Sprint", blank=True, null=True, related_name="sprints", on_delete=models.SET_NULL)
+    task = fields.PublicForeignKey("Task", blank=True, null=True, related_name="tasks", on_delete=models.SET_NULL)
+
     tags = fields.PublicManyToManyField("Tag", blank=True)

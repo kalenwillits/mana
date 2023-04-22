@@ -8,8 +8,10 @@ class Project(PrivateModel):
     organization = fields.PrivateForeignKey("Organization", on_delete=models.CASCADE, related_name="+")
     author = fields.PublicForeignKey("User", blank=True, null=True,  on_delete=models.CASCADE, related_name="+")
     name = fields.PublicCharField(max_length=250, default="")
-    threads = fields.PublicManyToManyField("Thread", blank=True)
-    state = fields.PublicForeignKey("ProjectState", blank=True, null=True, on_delete=models.SET_NULL)
+    state = fields.PublicForeignKey("State", blank=True, null=True, on_delete=models.SET_NULL,
+                                    related_name="project_states")
+    start_date = fields.PublicDateField(blank=True, null=True)
+    end_date = fields.PublicDateField(blank=True, null=True)
     tags = fields.PublicManyToManyField("Tag", blank=True)
 
     def __str__(self) -> str:

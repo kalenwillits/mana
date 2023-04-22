@@ -6,8 +6,7 @@ from django.db import models
 from django.contrib.auth.models import UserManager
 
 from base.fields import PublicUUIDField
-from base.fields import PublicIntegerField
-from base.fields import PublicForeignKey
+from base.fields import PrivateIntegerField
 from base.access import Public
 from base.access import Private
 
@@ -46,8 +45,8 @@ class BaseUserManager(UserManager, BaseManager):
 
 class BaseModel(models.Model):
     id = PublicUUIDField(primary_key=True, default=uuid4, editable=False)
-    created_at = PublicIntegerField(default=use_timestamp, editable=False)
-    updated_at = PublicIntegerField(blank=True, null=True, editable=False)
+    created_at = PrivateIntegerField(default=use_timestamp, editable=False)
+    updated_at = PrivateIntegerField(blank=True, null=True, editable=False)
 
     objects = BaseManager()
 
