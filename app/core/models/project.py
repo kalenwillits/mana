@@ -9,7 +9,6 @@ class Project(PrivateModel):
     name = fields.PublicCharField(max_length=250, default="")
     owner = fields.PublicForeignKey("User", blank=True, null=True,  on_delete=models.CASCADE,
                                     related_name="project_owner")
-
     info = fields.PublicTextField(default="", blank=True, null=True)
     state = fields.PublicForeignKey("State", blank=True, null=True, on_delete=models.SET_NULL,
                                     related_name="project_states")
