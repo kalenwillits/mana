@@ -16,6 +16,10 @@ class User(AbstractUser, PrivateModel):
     objects = BaseUserManager()
     tags = fields.PublicManyToManyField("Tag", blank=True)
 
+    project = fields.PublicForeignKey("Project", blank=True, null=True, on_delete=models.SET_NULL)
+    sprint = fields.PublicForeignKey("Sprint", blank=True, null=True, on_delete=models.SET_NULL)
+    task = fields.PublicForeignKey("Task", blank=True, null=True, on_delete=models.SET_NULL)
+
     def __str__(self):
         role_name = None
         if self.role:

@@ -5,11 +5,12 @@ from base import fields
 
 
 class Task(PrivateModel):
-    organization = fields.PrivateForeignKey("Organization", on_delete=models.CASCADE, related_name="+")
-    owner = fields.PublicForeignKey("User", blank=True, null=True,  on_delete=models.CASCADE, related_name="+")
+    organization = fields.PrivateForeignKey("Organization", on_delete=models.CASCADE)
+    owner = fields.PublicForeignKey("User", blank=True, null=True,  on_delete=models.CASCADE, related_name="task_owner")
     name = fields.PublicCharField(max_length=250, default="")
     info = fields.PublicTextField(default="", blank=True, null=True)
-    asignee = fields.PublicForeignKey("User", blank=True, null=True, on_delete=models.SET_NULL, related_name="+")
+    asignee = fields.PublicForeignKey("User", blank=True, null=True, on_delete=models.SET_NULL,
+                                      related_name="task_asignee")
     sprint = fields.PublicForeignKey("Sprint", on_delete=models.CASCADE, related_name="tasks")
     state = fields.PublicForeignKey("State", blank=True, null=True, on_delete=models.SET_NULL,
                                     related_name="task_states")
