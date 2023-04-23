@@ -1,3 +1,5 @@
+from .link import Link
+from .log import Log
 from .organization import Organization
 from .project import Project
 from .role import Role

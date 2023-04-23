@@ -15,3 +15,9 @@ class User(AbstractUser, PrivateModel):
 
     objects = BaseUserManager()
     tags = fields.PublicManyToManyField("Tag", blank=True)
+
+    def __str__(self):
+        role_name = None
+        if self.role:
+            role_name = self.role.name
+        return f"{self.username}::{role_name}"

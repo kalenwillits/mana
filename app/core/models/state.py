@@ -4,7 +4,7 @@ from base import fields
 
 class State(PrivateModel):
     name = fields.PublicCharField(max_length=250, default="")
-    description = fields.PublicTextField(default="", blank=True, null=True)
+    info = fields.PublicTextField(default="", blank=True, null=True)
     tags = fields.PublicManyToManyField("Tag", blank=True)
 
     def __str__(self):

@@ -7,6 +7,7 @@ from base import fields
 
 class Role(Private, Group):
     organization = fields.PrivateForeignKey("Organization", on_delete=models.CASCADE, related_name="+")
+    info = fields.PublicTextField(default="", blank=True, null=True)
     tags = fields.PublicManyToManyField("Tag", blank=True)
 
     class Meta:
