@@ -7,9 +7,12 @@ class Access(Enum):
 
 
 class Public:
-    _access = Access.PUBLIC.value
+    _access: int = Access.PUBLIC.value
+    _static_kwargs: dict = {}
 
 
 class Private:
-    _access = Access.PRIVATE.value
-
+    _access: int = Access.PRIVATE.value
+    _static_kwargs: dict = {
+        "editable": False,
+    }
