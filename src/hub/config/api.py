@@ -2,7 +2,7 @@ from ninja import NinjaAPI
 from django.contrib import auth
 
 
-from core.api.client import router as project_router
+from core.api import project_router
 
 
 def authenticate(request):
@@ -10,8 +10,8 @@ def authenticate(request):
         username=request.headers.get("username"),
         password=request.headers.get("password")
     )
-    if not user.organization:
-        return
+    if user and not user.organization:
+        return None
     return user
 
 

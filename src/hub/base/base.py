@@ -56,6 +56,16 @@ class BaseModel(models.Model):
     def values(self) -> dict:
         return type(self).objects.filter(pk=self.pk).values().first()
 
+    @staticmethod
+    def normalize_str(string: str) -> str:
+        return string.strip().replace(" ", "_")
+
+    def __setattr__(self, attr: str, value: any):
+        if attr == "name":
+            super().__setattr__(attr, self.normalize_str(value))
+        else:
+            super().__setattr__(attr, value)
+
 
 class PublicModel(BaseModel, Public):
     class Meta:

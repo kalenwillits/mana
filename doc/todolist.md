@@ -1,3 +1,2 @@
-- Parse tags from info text off of project.
 - unit test all api calls 
 - log objects on all api calls.

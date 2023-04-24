@@ -1,2 +1,2 @@
 #!/bin/bash
-python3 app/manage.py createsuperuser
+python3 src/hub/manage.py createsuperuser

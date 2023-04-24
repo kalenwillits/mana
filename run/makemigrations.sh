@@ -1,2 +1,2 @@
 #!/bin/bash
-python3 app/manage.py makemigrations
+python3 src/hub/manage.py makemigrations

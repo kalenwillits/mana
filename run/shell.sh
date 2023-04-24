@@ -2,4 +2,4 @@
 
 source env/activate.sh
 
-python app/manage.py shell
+python src/hub/manage.py shell

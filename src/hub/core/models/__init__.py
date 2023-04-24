@@ -1,3 +1,4 @@
+from .comment import Comment
 from .link import Link
 from .log import Log
 from .organization import Organization
@@ -7,5 +8,4 @@ from .sprint import Sprint
 from .state import State
 from .tag import Tag
 from .task import Task
-from .thread import Thread
 from .user import User
