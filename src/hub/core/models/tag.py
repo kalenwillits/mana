@@ -1,12 +1,11 @@
 from django.db import models
 
-from base import PrivateModel
-from base import fields
+from base import BaseModel
 
 
-class Tag(PrivateModel):
-    organization = fields.PrivateForeignKey("Organization", on_delete=models.CASCADE)
-    name = fields.PublicCharField(max_length=250, default="")
+class Tag(BaseModel):
+    organization = models.ForeignKey("Organization", on_delete=models.CASCADE)
+    name = models.CharField(max_length=250, default="")
 
     def __str__(self) -> str:
         return self.name

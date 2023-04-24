@@ -1,14 +1,11 @@
 from django.db import models
 
-from base import PrivateModel
-from base import fields
+from base import BaseModel
 
 
-class Comment(PrivateModel):
-    organization = fields.PrivateForeignKey("Organization", on_delete=models.CASCADE)
-    owner = fields.PublicForeignKey("User", blank=True, null=True, on_delete=models.CASCADE)
-    text = fields.PublicTextField(default="")
-
-    link = fields.PublicForeignKey("Link", on_delete=models.CASCADE)
-
-    tags = fields.PublicManyToManyField("Tag", blank=True)
+class Comment(BaseModel):
+    organization = models.ForeignKey("Organization", on_delete=models.CASCADE)
+    owner = models.ForeignKey("User", blank=True, null=True, on_delete=models.CASCADE)
+    text = models.TextField(default="")
+    link = models.ForeignKey("Link", on_delete=models.CASCADE)
+    tags = models.ManyToManyField("Tag", blank=True)

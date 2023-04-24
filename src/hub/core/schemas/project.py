@@ -1,13 +1,13 @@
 from datetime import date
 
-from ninja import Schema
+from base import BaseSchema
 
 
-class UseProject(Schema):
+class UseProjectIn(BaseSchema):
     name: str
 
 
-class NewProject(Schema):
+class NewProjectIn(BaseSchema):
     name: str
     info: str = None
     start_date: date = None
@@ -16,7 +16,7 @@ class NewProject(Schema):
     tags: list[str] = []
 
 
-class PushProject(Schema):
+class PushProjectIn(BaseSchema):
     info: str = None
     start_date: date = None
     end_date: date = None
@@ -24,9 +24,14 @@ class PushProject(Schema):
     tags: list[str] = None
 
 
-class SetProject(Schema):
+class SetProjectIn(BaseSchema):
     state: str
 
 
-class DropProject(Schema):
+class DropProjectIn(BaseSchema):
     name: str
+
+
+class PullProjectOut(BaseSchema):
+    name: str
+    owner__username: str = None

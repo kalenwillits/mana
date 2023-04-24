@@ -1,9 +1,11 @@
-from base import PrivateModel
-from base import fields
+from django.db import models
 
 
-class Organization(PrivateModel):
-    name = fields.PublicCharField(max_length=250, default="")
+from base import BaseModel
+
+
+class Organization(BaseModel):
+    name = models.CharField(max_length=250, default="")
 
     def __str__(self) -> str:
         return self.name
