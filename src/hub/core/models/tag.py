@@ -5,7 +5,7 @@ from base import fields
 
 
 class Tag(PrivateModel):
-    organization = fields.PrivateForeignKey("Organization", on_delete=models.CASCADE, related_name="+")
+    organization = fields.PrivateForeignKey("Organization", on_delete=models.CASCADE)
     name = fields.PublicCharField(max_length=250, default="")
 
     def __str__(self) -> str:

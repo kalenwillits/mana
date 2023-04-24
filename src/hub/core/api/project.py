@@ -18,7 +18,7 @@ from core.schemas import DropProject
 router = Router()
 
 
-@router.post("/use/", response={HTTPStatus.ACCEPTED: dict})
+@router.put("/use/", response={HTTPStatus.ACCEPTED: dict})
 def use(request, payload: UseProject):
     user = request.auth
     name = Project.normalize_str(payload.name)
@@ -33,25 +33,11 @@ def new(request, payload: NewProject):
     user = request.auth
     if Project.objects.filter(organization=user.organization, name=Project.normalize_str(payload.name)).exists():
         return HTTPStatus.CONFLICT, {"detail": f"Project [{payload.name}] already exists."}
-    instance = Project(organization=user.organization)
-    for field, value in payload.dict().items():
-        if value:
-            if field != "tags" and value is not None:
-                setattr(instance, field, value)
-    instance.save()
-    normalized_tags = list(map(Tag.normalize_str, payload.tags))
-    tags_queryset = Tag.objects.filter(organization=user.organization, name__in=normalized_tags)
-    new_tags = []
-    for tag_name in filter(lambda tag_name: not tags_queryset.filter(name=tag_name).exists(), normalized_tags):
-        new_tags.append(Tag(organization=user.organization, name=tag_name))
-
-    Tag.objects.bulk_create(new_tags)
-    instance.tags.add(*tags_queryset, *new_tags)
-
+    Project(organization=user.organization).update(**payload.dict()).save()
     return HTTPStatus.CREATED, {"detail": "Project created."}
 
 
-@router.post("/set/", response={HTTPStatus.ACCEPTED: dict, HTTPStatus.BAD_REQUEST: dict})
+@router.put("/set/", response={HTTPStatus.ACCEPTED: dict, HTTPStatus.BAD_REQUEST: dict})
 def set(request, payload: SetProject):
     user = request.auth
     if not user.project:
