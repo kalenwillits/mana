@@ -4,16 +4,16 @@ from datetime import datetime
 from django.shortcuts import get_object_or_404
 from ninja import Router
 
-from core.models import Sprint
+from core.models import Task
 from core.models import State
 from core.models import Log
 from core.models import Comment
-from core.schemas import UseSprintIn
-from core.schemas import NewSprintIn
-from core.schemas import PushSprintIn
-from core.schemas import SetSprintIn
-from core.schemas import DropSprintIn
-from core.schemas import PullSprintOut
+from core.schemas import UseTaskIn
+from core.schemas import NewTaskIn
+from core.schemas import PushTaskIn
+from core.schemas import SetTaskIn
+from core.schemas import DropTaskIn
+from core.schemas import PullTaskOut
 from core.schemas import PullCommentOut
 
 
@@ -24,27 +24,27 @@ router = Router()
         HTTPStatus.ACCEPTED: dict
     }
 )
-def use(request, payload: UseSprintIn):
+def use(request, payload: UseTaskIn):
     timestamp = datetime.utcnow()
     user = request.auth
     user.read_at = timestamp
-    old_sprint = user.sprint
-    name = Sprint.normalize_str(payload.name)
+    old_task = user.task
+    name = Task.normalize_str(payload.name)
     instance = get_object_or_404(
-        Sprint,
+        Task,
         organization=user.organization,
         name=name
     )
     instance.read_at = timestamp
-    user.sprint = instance
+    user.task = instance
     user.save()
     Log(
         organization=user.organization,
-        info=f"use [{old_sprint}] -> [{user.sprint}]",
+        info=f"use [{old_task}] -> [{user.task}]",
         user=user,
         link=instance,
     ).save()
-    return HTTPStatus.ACCEPTED, {"detail": "Sprint selected."}
+    return HTTPStatus.ACCEPTED, {"detail": "Task selected."}
 
 
 @router.post("/new/", response={
@@ -52,17 +52,17 @@ def use(request, payload: UseSprintIn):
         HTTPStatus.CONFLICT: dict
     }
 )
-def new(request, payload: NewSprintIn):
+def new(request, payload: NewTaskIn):
     timestamp = datetime.utcnow()
     user = request.auth
     user.read_at = timestamp
     user.save()
-    if Sprint.objects.filter(organization=user.organization, name=Sprint.normalize_str(payload.name)).exists():
-        return HTTPStatus.CONFLICT, {"detail": f"Sprint [{payload.name}] already exists."}
-    instance = Sprint(
+    if Task.objects.filter(organization=user.organization, name=Task.normalize_str(payload.name)).exists():
+        return HTTPStatus.CONFLICT, {"detail": f"Task [{payload.name}] already exists."}
+    instance = Task(
         organization=user.organization,
-        project=user.project,
-        owner=user.role
+        owner=user.role,
+        sprint=user.sprint,
     ).update(**payload.dict()).save()
     Log(
         organization=user.organization,
@@ -71,7 +71,7 @@ def new(request, payload: NewSprintIn):
         link=instance,
     ).save()
 
-    return HTTPStatus.CREATED, {"detail": "Sprint created."}
+    return HTTPStatus.CREATED, {"detail": "Task created."}
 
 
 @router.put("/set/", response={
@@ -80,14 +80,14 @@ def new(request, payload: NewSprintIn):
         HTTPStatus.UNAUTHORIZED: dict
     }
 )
-def set(request, payload: SetSprintIn):
+def set(request, payload: SetTaskIn):
     timestamp = datetime.utcnow()
     user = request.auth
     user.read_at = timestamp
     user.save()
-    if not user.sprint:
-        return HTTPStatus.BAD_REQUEST, {"detail": "No sprint in use."}
-    old_state = user.sprint.state
+    if not user.task:
+        return HTTPStatus.BAD_REQUEST, {"detail": "No task in use."}
+    old_state = user.task.state
     name = State.normalize_str(payload.state)
     state = get_object_or_404(
         State,
@@ -97,14 +97,14 @@ def set(request, payload: SetSprintIn):
     state.read_at = timestamp
     if state.role != user.role:
         return HTTPStatus.UNAUTHORIZED, {"detail": "Unauthorized action."}
-    user.sprint.state = state
-    user.sprint.updated_at = timestamp
-    user.sprint.save()
+    user.task.state = state
+    user.task.updated_at = timestamp
+    user.task.save()
     Log(
         organization=user.organization,
         info=f"set [{old_state}] -> [{state}]",
         user=user,
-        link=user.sprint,
+        link=user.task,
     ).save()
     return HTTPStatus.ACCEPTED, {"detail": f"[{user.project}] set [{payload.state}]."}
 
@@ -114,13 +114,13 @@ def set(request, payload: SetSprintIn):
         HTTPStatus.UNAUTHORIZED: dict
     }
 )
-def drop(request, payload: DropSprintIn):
+def drop(request, payload: DropTaskIn):
     timestamp = datetime.utcnow()
     user = request.auth
     user.updated_at = timestamp
     user.save()
     name = State.normalize_str(payload.name)
-    instance = get_object_or_404(Sprint, organization=user.organization, name=name)
+    instance = get_object_or_404(Task, organization=user.organization, name=name)
     if instance.owner != user.role:
         return HTTPStatus.UNAUTHORIZED, {"detail": "Unauthorized action."}
     instance.delete()
@@ -130,7 +130,7 @@ def drop(request, payload: DropSprintIn):
         user=user,
         link=None,
     ).save()
-    return HTTPStatus.OK, {"detail": "Sprint deleted."}
+    return HTTPStatus.OK, {"detail": "Task deleted."}
 
 
 @router.put("/push/", response={
@@ -139,17 +139,17 @@ def drop(request, payload: DropSprintIn):
         HTTPStatus.UNAUTHORIZED: dict
     }
 )
-def push(request, payload: PushSprintIn):
+def push(request, payload: PushTaskIn):
     timestamp = datetime.utcnow()
     user = request.auth
     user.read_at = timestamp
     user.save()
-    if not user.sprint:
-        return HTTPStatus.BAD_REQUEST, {"detail": "No sprint in use."}
+    if not user.task:
+        return HTTPStatus.BAD_REQUEST, {"detail": "No task in use."}
     instance = get_object_or_404(
-        Sprint,
+        Task,
         organization=user.organization,
-        id=user.sprint.id
+        id=user.task.id
     )
     if instance.owner != user.role:
         return HTTPStatus.UNAUTHORIZED, {"detail": "Unauthorized action."}
@@ -161,11 +161,11 @@ def push(request, payload: PushSprintIn):
         user=user,
         link=instance,
     ).save()
-    return HTTPStatus.ACCEPTED, {"detail": "Sprint changes accepted."}
+    return HTTPStatus.ACCEPTED, {"detail": "Task changes accepted."}
 
 
 @router.get("/pull/", response={
-        HTTPStatus.OK: PullSprintOut,
+        HTTPStatus.OK: PullTaskOut,
         HTTPStatus.BAD_REQUEST: dict
     }
 )
@@ -174,23 +174,23 @@ def pull(request):
     user = request.auth
     user.read_at = timestamp
     user.save()
-    if not user.sprint:
-        return HTTPStatus.BAD_REQUEST, {"detail": "No sprint in use."}
-    sprint_queryset = Sprint.objects.filter(
-        organization=user.organization, id=user.sprint.id
+    if not user.task:
+        return HTTPStatus.BAD_REQUEST, {"detail": "No task in use."}
+    task_queryset = Task.objects.filter(
+        organization=user.organization, id=user.task.id
     )
-    sprint_comment_queryset = Comment.objects.filter(
+    task_comment_queryset = Comment.objects.filter(
         organization=user.organization,
-        sprint=user.sprint
+        task=user.task
     )
-    sprint_queryset.update(read_at=timestamp).save()
-    sprint_comment_queryset.update(read_at=timestamp).save()
+    task_queryset.update(read_at=timestamp).save()
+    task_comment_queryset.update(read_at=timestamp).save()
     Log(
         organization=user.organization,
-        info=f"pull sprint [{user.sprint}]",
+        info=f"pull task [{user.task}]",
         user=user,
-        link=sprint_queryset.first(),
+        link=task_queryset.first(),
     ).save()
-    response = sprint_queryset.values(*PullSprintOut.fields()).first()
-    response["comments"] = list(sprint_comment_queryset.values(*PullCommentOut.fields()))
+    response = task_queryset.values(*PullTaskOut.fields()).first()
+    response["comments"] = list(task_comment_queryset.values(*PullCommentOut.fields()))
     return HTTPStatus.OK, response
