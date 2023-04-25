@@ -6,3 +6,4 @@ from .project import DropProjectIn
 from .project import PullProjectOut
 from .sprint import PullSprintOut
 from .task import PullTaskOut
+from .comment import PullCommentOut

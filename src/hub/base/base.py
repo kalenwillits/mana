@@ -8,10 +8,6 @@ from django.apps import apps
 from ninja import Schema
 
 
-def use_timestamp() -> int:
-    return int(datetime.utcnow().timestamp())
-
-
 class BaseSchema(Schema):
 
     @classmethod
@@ -29,8 +25,9 @@ class BaseUserManager(UserManager, BaseManager):
 
 class BaseModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
-    created_at = models.IntegerField(default=use_timestamp, editable=False)
-    updated_at = models.IntegerField(blank=True, null=True, editable=False)
+    created_at = models.DateTimeField(default=datetime.utcnow, editable=False)
+    read_at = models.DateTimeField(blank=True, null=True, editable=False)
+    updated_at = models.DateTimeField(blank=True, null=True, editable=False)
 
     objects = BaseManager()
 
@@ -45,14 +42,16 @@ class BaseModel(models.Model):
                     setattr(self, field, value)
         if hasattr(self, "tags"):
             tags = kwargs.get("tags", [])
-            normalized_tags = list(map(Tag.normalize_str, tags))
-            tags_queryset = Tag.objects.filter(organization=self.organization, name__in=normalized_tags)
-            new_tags = []
-            for tag_name in filter(lambda tag_name: not tags_queryset.filter(name=tag_name).exists(), normalized_tags):
-                new_tags.append(Tag(organization=self.organization, name=tag_name))
+            if tags:
+                normalized_tags = list(map(Tag.normalize_str, tags))
+                tags_queryset = Tag.objects.filter(organization=self.organization, name__in=normalized_tags)
+                new_tags = []
+                for tag_name in filter(
+                        lambda tag_name: not tags_queryset.filter(name=tag_name).exists(), normalized_tags):
+                    new_tags.append(Tag(organization=self.organization, name=tag_name))
 
-            Tag.objects.bulk_create(new_tags)
-            self.tags.add(*tags_queryset, *new_tags)
+                Tag.objects.bulk_create(new_tags)
+                self.tags.add(*tags_queryset, *new_tags)
         return self
 
     @staticmethod

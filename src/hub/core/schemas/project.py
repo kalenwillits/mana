@@ -1,8 +1,8 @@
 from datetime import date
 
 from base import BaseSchema
-from .tag import TagOut
-from .sprint import PullSprintOut
+
+from .comment import PullCommentOut
 
 
 class UseProjectIn(BaseSchema):
@@ -38,8 +38,7 @@ class PullProjectOut(BaseSchema):
     name: str
     owner__name: str = None
     state__name: str = None
-    sprints: list[PullSprintOut] = None
-    info: str
-    start_date: date
-    end_date: date
-    tags: list[TagOut] = None
+    info: str = None
+    start_date: date = None
+    end_date: date = None
+    comments: list[PullCommentOut] = None

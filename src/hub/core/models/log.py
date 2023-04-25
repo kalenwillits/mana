@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
@@ -22,11 +20,18 @@ class Log(BaseModel):
             super().__setattr__(attr, value)
 
     def _link(self, obj):
+        target_type = None
+        target_id = None
+        target_object = None
+        if obj:
+            target_type = ContentType.objects.get_for_model(obj)
+            target_id = target_type.id
+            target_object = obj
         super().__setattr__("link", Link(
             organization=self.organization,
-            target_type=ContentType.objects.get_for_model(obj),
-            target_id=obj.id,
-            target_object=obj
+            target_type=target_type,
+            target_id=target_id,
+            target_object=target_object
         ))
 
     def save(self):
@@ -35,4 +40,4 @@ class Log(BaseModel):
         super().save()
 
     def __str__(self):
-        return f"{datetime.fromtimestamp(self.created_at)}::{self.info[:HEADER_LENGTH]}"
+        return f"{self.created_at} {self.info[:HEADER_LENGTH]}"

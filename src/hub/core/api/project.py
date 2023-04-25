@@ -4,18 +4,16 @@ from django.shortcuts import get_object_or_404
 from ninja import Router
 
 from core.models import Project
-from core.models import Sprint
 from core.models import State
-from core.models import Task
 from core.models import Log
+from core.models import Comment
 from core.schemas import UseProjectIn
 from core.schemas import NewProjectIn
 from core.schemas import PushProjectIn
 from core.schemas import SetProjectIn
 from core.schemas import DropProjectIn
 from core.schemas import PullProjectOut
-from core.schemas import PullSprintOut
-from core.schemas import PullTaskOut
+from core.schemas import PullCommentOut
 
 
 router = Router()
@@ -27,7 +25,7 @@ router = Router()
 )
 def use(request, payload: UseProjectIn):
     user = request.auth
-    old_project = user.user.project
+    old_project = user.project
     name = Project.normalize_str(payload.name)
     instance = get_object_or_404(
         Project,
@@ -42,7 +40,7 @@ def use(request, payload: UseProjectIn):
         user=user,
         link=instance,
     ).save()
-    return HTTPStatus.ACCEPTED, {"detail": f"Project [{instance.name}] selected."}
+    return HTTPStatus.ACCEPTED, {"detail": "Project selected."}
 
 
 @router.post("/new/", response={
@@ -99,7 +97,8 @@ def set(request, payload: SetProjectIn):
 
 
 @router.delete("/drop/", response={
-        HTTPStatus.OK: dict
+        HTTPStatus.OK: dict,
+        HTTPStatus.UNAUTHORIZED: dict
     }
 )
 def drop(request, payload: DropProjectIn):
@@ -120,7 +119,8 @@ def drop(request, payload: DropProjectIn):
 
 @router.put("/push/", response={
         HTTPStatus.ACCEPTED: dict,
-        HTTPStatus.BAD_REQUEST: dict
+        HTTPStatus.BAD_REQUEST: dict,
+        HTTPStatus.UNAUTHORIZED: dict
     }
 )
 def push(request, payload: PushProjectIn):
@@ -154,26 +154,13 @@ def pull(request):
     user = request.auth
     if not user.project:
         return HTTPStatus.BAD_REQUEST, {"detail": "No project in use."}
-    response = Project.objects.filter(
+    project_queryset = Project.objects.filter(
         organization=user.organization, id=user.project.id
-    ).values(*PullProjectOut.fields()).first()
-
-    response["sprints"] = list(Sprint.objects.filter(
+    )
+    project_comment_queryset = Comment.objects.filter(
         organization=user.organization,
         project=user.project
-    ).values(*PullSprintOut.fields()))
-
-    for sprint in response["sprints"]:
-        sprint["tasks"] = list(Task.objects.filter(
-            organization=user.organization,
-            sprint=user.sprint,
-            asignee=user
-        ).values(*PullTaskOut.fields()))
-
-    Log(
-        organization=user.organization,
-        info=f"pull [{user.project}]",
-        user=user,
-        link=user.project,
-    ).save()
+    )
+    response = project_queryset.values(*PullProjectOut.fields()).first()
+    response["comments"] = list(project_comment_queryset.values(*PullCommentOut.fields()))
     return HTTPStatus.OK, response

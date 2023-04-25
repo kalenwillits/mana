@@ -2,6 +2,7 @@ from datetime import date
 
 from base import BaseSchema
 from .task import PullTaskOut
+from .tag import TagOut
 
 
 class PullSprintOut(BaseSchema):
@@ -12,3 +13,4 @@ class PullSprintOut(BaseSchema):
     info: str = None
     start_date: date = None
     end_date: date = None
+    tags__name: list[str] = None
