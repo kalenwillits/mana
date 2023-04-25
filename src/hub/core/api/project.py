@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from datetime import datetime
 
 from django.shortcuts import get_object_or_404
 from ninja import Router
@@ -24,7 +25,9 @@ router = Router()
     }
 )
 def use(request, payload: UseProjectIn):
+    timestamp = datetime.utcnow()
     user = request.auth
+    user.read_at = timestamp
     old_project = user.project
     name = Project.normalize_str(payload.name)
     instance = get_object_or_404(
@@ -32,6 +35,7 @@ def use(request, payload: UseProjectIn):
         organization=user.organization,
         name=name
     )
+    instance.read_at = timestamp
     user.project = instance
     user.save()
     Log(
@@ -49,7 +53,10 @@ def use(request, payload: UseProjectIn):
     }
 )
 def new(request, payload: NewProjectIn):
+    timestamp = datetime.utcnow()
     user = request.auth
+    user.read_at = timestamp
+    user.save()
     if Project.objects.filter(organization=user.organization, name=Project.normalize_str(payload.name)).exists():
         return HTTPStatus.CONFLICT, {"detail": f"Project [{payload.name}] already exists."}
     instance = Project(
@@ -58,7 +65,7 @@ def new(request, payload: NewProjectIn):
     ).update(**payload.dict()).save()
     Log(
         organization=user.organization,
-        info=f"new [{user.project}]",
+        info=f"new [{instance}]",
         user=user,
         link=instance,
     ).save()
@@ -73,7 +80,10 @@ def new(request, payload: NewProjectIn):
     }
 )
 def set(request, payload: SetProjectIn):
+    timestamp = datetime.utcnow()
     user = request.auth
+    user.read_at = timestamp
+    user.save()
     if not user.project:
         return HTTPStatus.BAD_REQUEST, {"detail": "No project in use."}
     old_state = user.project.state
@@ -83,9 +93,11 @@ def set(request, payload: SetProjectIn):
         organization=user.organization,
         name=name,
     )
+    state.read_at = timestamp
     if state.role != user.role:
         return HTTPStatus.UNAUTHORIZED, {"detail": "Unauthorized action."}
     user.project.state = state
+    user.project.updated_at = timestamp
     user.project.save()
     Log(
         organization=user.organization,
@@ -93,7 +105,7 @@ def set(request, payload: SetProjectIn):
         user=user,
         link=user.project,
     ).save()
-    return HTTPStatus.ACCEPTED, {"detail": f"[{user.project.name}] set [{payload.state}]."}
+    return HTTPStatus.ACCEPTED, {"detail": f"[{user.project}] set [{payload.state}]."}
 
 
 @router.delete("/drop/", response={
@@ -102,7 +114,10 @@ def set(request, payload: SetProjectIn):
     }
 )
 def drop(request, payload: DropProjectIn):
+    timestamp = datetime.utcnow()
     user = request.auth
+    user.updated_at = timestamp
+    user.save()
     name = State.normalize_str(payload.name)
     instance = get_object_or_404(Project, organization=user.organization, name=name)
     if instance.owner != user.role:
@@ -124,7 +139,10 @@ def drop(request, payload: DropProjectIn):
     }
 )
 def push(request, payload: PushProjectIn):
+    timestamp = datetime.utcnow()
     user = request.auth
+    user.read_at = timestamp
+    user.save()
     if not user.project:
         return HTTPStatus.BAD_REQUEST, {"detail": "No project in use."}
     instance = get_object_or_404(
@@ -134,7 +152,7 @@ def push(request, payload: PushProjectIn):
     )
     if instance.owner != user.role:
         return HTTPStatus.UNAUTHORIZED, {"detail": "Unauthorized action."}
-
+    instance.updated_at = timestamp
     instance.update(**payload.dict()).save()
     Log(
         organization=user.organization,
@@ -151,7 +169,10 @@ def push(request, payload: PushProjectIn):
     }
 )
 def pull(request):
+    timestamp = datetime.utcnow()
     user = request.auth
+    user.read_at = timestamp
+    user.save()
     if not user.project:
         return HTTPStatus.BAD_REQUEST, {"detail": "No project in use."}
     project_queryset = Project.objects.filter(
@@ -161,6 +182,14 @@ def pull(request):
         organization=user.organization,
         project=user.project
     )
+    project_queryset.update(read_at=timestamp).save()
+    project_comment_queryset.update(read_at=timestamp).save()
+    Log(
+        organization=user.organization,
+        info=f"pull project [{user.project}]",
+        user=user,
+        link=project_queryset.first(),
+    ).save()
     response = project_queryset.values(*PullProjectOut.fields()).first()
     response["comments"] = list(project_comment_queryset.values(*PullCommentOut.fields()))
     return HTTPStatus.OK, response

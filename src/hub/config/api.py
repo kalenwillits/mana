@@ -3,6 +3,7 @@ from django.contrib import auth
 
 
 from core.api import project_router
+from core.api import sprint_router
 
 
 def authenticate(request):
@@ -18,3 +19,4 @@ def authenticate(request):
 api = NinjaAPI(auth=authenticate)
 
 api.add_router("/project/", project_router)
+api.add_router("/sprint/", sprint_router)
