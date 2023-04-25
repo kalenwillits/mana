@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
@@ -10,7 +12,7 @@ HEADER_LENGTH: int = 250
 class Log(BaseModel):
     organization = models.ForeignKey("Organization", on_delete=models.CASCADE)
     info = models.TextField(default="", blank=True, null=True)
-    owner = models.ForeignKey("User", blank=True, null=True, on_delete=models.CASCADE)
+    user = models.ForeignKey("User", blank=True, null=True, on_delete=models.CASCADE)
     link = models.ForeignKey("Link", blank=True, null=True, on_delete=models.CASCADE)
 
     def __setattr__(self, attr: str, value: any):
@@ -33,4 +35,4 @@ class Log(BaseModel):
         super().save()
 
     def __str__(self):
-        return self.info[:HEADER_LENGTH]
+        return f"{datetime.fromtimestamp(self.created_at)}::{self.info[:HEADER_LENGTH]}"

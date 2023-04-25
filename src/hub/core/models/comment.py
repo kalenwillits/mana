@@ -6,7 +6,7 @@ from .link import Link
 
 class Comment(BaseModel):
     organization = models.ForeignKey("Organization", on_delete=models.CASCADE)
-    owner = models.ForeignKey("User", blank=True, null=True, on_delete=models.CASCADE)
+    user = models.ForeignKey("User", blank=True, null=True, on_delete=models.CASCADE)
     text = models.TextField(default="")
     link = models.ForeignKey("Link", on_delete=models.CASCADE)
     tags = models.ManyToManyField("Tag", blank=True)
@@ -29,4 +29,3 @@ class Comment(BaseModel):
         if hasattr(self, "link"):
             self.link.save()
         super().save()
-

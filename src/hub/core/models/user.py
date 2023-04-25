@@ -7,6 +7,7 @@ from base import BaseUserManager
 
 class User(AbstractUser, BaseModel):
     groups = None
+    permissions = None
 
     organization = models.ForeignKey(
         "Organization", on_delete=models.CASCADE, related_name="+", blank=True, null=True)

@@ -4,7 +4,8 @@ from base import BaseSchema
 
 class PullTaskOut(BaseSchema):
     name: str
-    owner__username: str = None
+    owner__name: str = None
+    state__name: str = None
     info: str = None
     estimate: float
     start_date: date

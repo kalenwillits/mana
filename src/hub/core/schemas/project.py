@@ -36,10 +36,10 @@ class DropProjectIn(BaseSchema):
 
 class PullProjectOut(BaseSchema):
     name: str
-    owner__username: str = None
+    owner__name: str = None
+    state__name: str = None
     sprints: list[PullSprintOut] = None
     info: str
-    state: str = None
     start_date: date
     end_date: date
     tags: list[TagOut] = None
