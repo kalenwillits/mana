@@ -13,7 +13,7 @@ class Task(BaseModel):
     sprint = models.ForeignKey("Sprint", on_delete=models.CASCADE, related_name="tasks")
     state = models.ForeignKey("State", blank=True, null=True, on_delete=models.SET_NULL,
                               related_name="task_states")
-    estimate = models.IntegerField(default=0, blank=True, null=True)
+    estimate = models.FloatField(blank=True, null=True)
     priority = models.IntegerField(default=0, blank=True, null=True)
     start_date = models.DateField(blank=True, null=True)
     end_date = models.DateField(blank=True, null=True)

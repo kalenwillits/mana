@@ -10,3 +10,6 @@ class Link(BaseModel):
     target_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     target_id = models.UUIDField()
     target_object = GenericForeignKey("target_type", "target_id")
+
+    def __str__(self):
+        return f"{self.target_type}::{self.target_object}"

@@ -1,6 +1,8 @@
 from datetime import date
 
 from base import BaseSchema
+from .tag import TagOut
+from .sprint import PullSprintOut
 
 
 class UseProjectIn(BaseSchema):
@@ -35,3 +37,9 @@ class DropProjectIn(BaseSchema):
 class PullProjectOut(BaseSchema):
     name: str
     owner__username: str = None
+    sprints: list[PullSprintOut] = None
+    info: str
+    state: str = None
+    start_date: date
+    end_date: date
+    tags: list[TagOut] = None
