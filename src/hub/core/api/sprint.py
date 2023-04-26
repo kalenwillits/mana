@@ -182,7 +182,7 @@ def pull(request):
     sprint_comment_queryset = Comment.objects.filter(
         organization=user.organization,
         sprint=user.sprint
-    )
+    ).order_by("created_at")
     sprint_queryset.update(read_at=timestamp).save()
     sprint_comment_queryset.update(read_at=timestamp).save()
     Log(

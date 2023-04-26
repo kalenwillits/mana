@@ -145,3 +145,7 @@ env/
 
 
 *migrations*
+
+# C++
+bin/
+

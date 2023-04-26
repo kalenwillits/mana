@@ -182,7 +182,7 @@ def pull(request):
     task_comment_queryset = Comment.objects.filter(
         organization=user.organization,
         task=user.task
-    )
+    ).order_by("created_at")
     task_queryset.update(read_at=timestamp).save()
     task_comment_queryset.update(read_at=timestamp).save()
     Log(
