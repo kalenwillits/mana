@@ -7,7 +7,7 @@ class ManaClient:
 
     def __call__(self, *args):
         operation = next(iter(args), None)
-        if operation in ["new", "set", "use", "drop", "push"]:
+        if operation in ["new", "set", "use", "drop"]:
             response = Request(*args)()
             self.cout(response.json().get("detail", "unkown response"))
         elif operation == "pull":
@@ -18,6 +18,10 @@ class ManaClient:
                 self.cout(f"{obj} pulled.")
             else:
                 raise Exception("Missing object")
+        elif operation == "push":
+            data = self.file_manager.get_data()
+            response = Request(*args, data)()
+            self.cout(response.json().get("detail"))
         elif operation == "clear":
             self.file_manager.clear()
         else:
