@@ -36,6 +36,7 @@ class DropSprintIn(BaseSchema):
 
 class PullSprintOut(BaseSchema):
     name: str
+    project__name: str
     owner__name: str = None
     state__name: str = None
     info: str = None

@@ -36,10 +36,12 @@ class DropTaskIn(BaseSchema):
 
 class PullTaskOut(BaseSchema):
     name: str
+    sprint__project__name: str
+    sprint__name: str
     owner__name: str = None
     state__name: str = None
     info: str = None
-    estimate: float
-    start_date: date
-    end_date: date
+    estimate: float = None
+    start_date: date = None
+    end_date: date = None
     comments: list[PullCommentOut] = None

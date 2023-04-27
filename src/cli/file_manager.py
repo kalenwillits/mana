@@ -8,17 +8,34 @@ DELIM = """
 
 
 class FileManager:
-    def __init__(self):
+    def __init__(self, project_name=None, sprint_name=None, task_name=None):
+        self.project_name = project_name
+        self.sprint_name = sprint_name
+        self.task_name = task_name
+
         self._root: Path = Path.home() / os.environ.get("MANA_ROOT", "mana/")
 
     def __call__(self, obj, data):
         getattr(self, f"use_{obj}")(data)
 
+    def use_dir(self, dirpath: Path):
+        if not os.path.exists(dirpath):
+            dirpath.mkdir(parents=True, exist_ok=True)
+
     @property
-    def root(self):
-        if not os.path.exists(self._root):
-            os.mkdir(self._root)
+    def root(self) -> Path:
+        self.use_dir(self._root)
         return self._root
+
+    @property
+    def sprints(self) -> Path:
+        self.use_dir(self._root / self.project_name / "sprints")
+        return self._root / self.project_name / "sprints"
+
+    @property
+    def tasks(self) -> Path:
+        self.use_dir(self.sprints / self.sprint_name / "tasks")
+        return self.sprints / self.sprint_name / "tasks"
 
     def clear(self):
         shutil.rmtree(self.root / "")
@@ -51,9 +68,7 @@ class FileManager:
         if not (name := data.get("name")):
             raise ValueError("Missing project name")
         info = data.get("info")
-
-        self.clear()
-        os.mkdir(self.root / name)
+        self.use_dir(self.root / name)
         with open(self.root / name / f"{name}.md", "w+") as project_file:
             project_file.write(self.make_header(
                 name,
@@ -68,13 +83,15 @@ class FileManager:
                 project_file.write(self.format_comment(comment))
 
     def use_sprint(self, data: dict):
+        self.project_name = data.get("project__name")
         if not (name := data.get("name")):
             raise ValueError("Missing sprint name")
         info = data.get("info")
 
         self.clear()
-        os.mkdir(self.root / "sprints" / name)
-        with open(self.root / "sprints" / name / f"{name}.md", "w+") as project_file:
+
+        self.use_dir(self.sprints / name)
+        with open(self.sprints / name / f"{name}.md", "w+") as project_file:
             project_file.write(self.make_header(
                 name,
                 data.get("state", "(Draft)"),
@@ -88,13 +105,14 @@ class FileManager:
                 project_file.write(self.format_comment(comment))
 
     def use_task(self, data: dict):
+        self.project_name = data.get("sprint__project__name")
+        self.sprint_name = data.get("sprint__name")
         if not (name := data.get("name")):
             raise ValueError("Missing task name")
         info = data.get("info")
 
-        self.clear()
-        os.mkdir(self.root / "sprints" / data.get("sprint__name") / "tasks" / name)
-        with open(self.root / "sprints" / data.get("sprint__name") / "tasks" / name / f"{name}.md", "w+") \
+        self.use_dir(self.tasks / name)
+        with open(self.tasks / name / f"{name}.md", "w+") \
                 as project_file:
             project_file.write(self.make_header(
                 name,
