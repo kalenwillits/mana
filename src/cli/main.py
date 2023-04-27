@@ -1,6 +1,6 @@
 import argparse
 
-from request import Request
+from mana_client import ManaClient
 
 parser = argparse.ArgumentParser()
 parser.add_argument("commands", nargs="+")
@@ -9,7 +9,7 @@ args = parser.parse_args()
 
 
 def main():
-    response = Request(*args.commands)()
+    ManaClient()(*args.commands)
 
 
 if __name__ == "__main__":
