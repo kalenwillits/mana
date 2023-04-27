@@ -15,10 +15,8 @@ OBJECTS = "project", "sprint", "task"
 
 
 class Request:
-    def __init__(self, operation: str, obj: str, arg: str):
+    def __init__(self, operation: str, obj: str = None, arg: str = None):
         assert operation in OPERATION_MAP.keys(), f"Invalid operation [{operation}]"
-        assert obj in OBJECTS, f"Invalid object [{obj}]"
-        assert arg, "Missing argument"
         self._base_url = os.environ.get("MANA_HUB_URL", "http://localhost:8000")
         self.operation = operation
         self.obj = obj

@@ -183,8 +183,8 @@ def pull(request):
         organization=user.organization,
         task=user.task
     ).order_by("created_at")
-    task_queryset.update(read_at=timestamp).save()
-    task_comment_queryset.update(read_at=timestamp).save()
+    task_queryset.update(read_at=timestamp)
+    task_comment_queryset.update(read_at=timestamp)
     Log(
         organization=user.organization,
         info=f"pull task [{user.task}]",
