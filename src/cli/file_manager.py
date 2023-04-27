@@ -40,6 +40,9 @@ class FileManager:
     def clear(self):
         shutil.rmtree(self.root / "")
 
+    def get_data():
+        return {}
+
     def make_header(
         self,
         name: str,
